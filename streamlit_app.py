@@ -92,7 +92,7 @@ def generate_tasklist(api_key, input_text):
 st.title("Task List Generator")
 
 # Input for OpenAI API Key
-api_key = st.text_input("Enter your OpenAI API key:", type="password")
+api_key = st.secrets["api_key"]
 
 # Text area for input text
 input_text = st.text_area("Paste the text here to generate the task list:")
