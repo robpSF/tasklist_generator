@@ -7,33 +7,17 @@ from io import BytesIO
 # Function to call OpenAI API and generate tasks from input text using ChatCompletion
 def generate_tasklist(api_key, input_text):
     openai.api_key = api_key
-    prompt = f"""Extract a meaningful task list from the following text and format it as an Excel spreadsheet with the following columns:
-- TASKLIST: The name of the overarching tasklist category.
-- TASK: The specific tasks or subtasks, including any numbering for clarity.
-- DESCRIPTION: A brief context or description of the task.
-- ASSIGN TO: Leave empty.
-- START DATE: Leave empty.
-- DUE DATE: Leave empty.
-- PRIORITY: Leave empty.
-- ESTIMATED TIME: Leave empty.
-- TAGS: Leave empty.
-- STATUS: Leave empty.
+    prompt = f"""Extract a meaningful task list from the following text and format it as a structured tabular output with the following columns:
 
-The task list should look like this:
+TASKLIST, TASK, DESCRIPTION, ASSIGN TO, START DATE, DUE DATE, PRIORITY, ESTIMATED TIME, TAGS, STATUS.
 
-TASKLIST: [Tasklist Name]
-TASK: [Task Name]
-DESCRIPTION: [Description]
-ASSIGN TO: 
-START DATE: 
-DUE DATE: 
-PRIORITY: 
-ESTIMATED TIME: 
-TAGS: 
-STATUS: 
+For each task or subtask, include details under each column. Leave "ASSIGN TO", "START DATE", "DUE DATE", "PRIORITY", "ESTIMATED TIME", "TAGS", and "STATUS" empty.
 
-Input Text:
-{input_text}"""
+Text to extract tasks from:
+
+{input_text}
+
+Provide the output in the exact tabular structure, with clear headings matching the specified columns."""
 
 
     response = openai.ChatCompletion.create(
