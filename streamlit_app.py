@@ -6,7 +6,7 @@ from io import BytesIO
 
 # Function to call OpenAI API and generate tasks from input text using ChatCompletion
 def generate_tasklist(api_key, input_text):
-    openai_api_key = st.secrets["api_key"]
+    openai_api_key = api_key
 
     # Define the expected JSON schema for output
     functions = [
@@ -89,7 +89,7 @@ def generate_tasklist(api_key, input_text):
     return generated_tasks
 
 # Assuming input text and API key are already provided for demonstration purposes
-api_key = "YOUR_OPENAI_API_KEY"
+api_key = st.secrets["api_key"]
 input_text = "James wishes to create pre-scenario materials, including usernames, passwords, and a video..."
 
 # Generate the task list
