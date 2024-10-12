@@ -105,6 +105,15 @@ if st.button("Generate Task List"):
     if api_key and input_text:
         try:
             tasks = generate_tasklist(api_key, input_text)
+
+            # Find the maximum length of any of the lists
+            max_length = max(len(tasks[key]) for key in tasks)
+
+            # Ensure all lists are of the same length by padding with None
+            for key in tasks:
+                tasks[key].extend([None] * (max_length - len(tasks[key])))
+
+            # Create DataFrame
             task_list_df = pd.DataFrame(tasks)
             
             # Display the generated DataFrame
