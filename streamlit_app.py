@@ -7,7 +7,16 @@ from io import BytesIO
 # Function to call OpenAI API and generate tasks from input text using ChatCompletion
 def generate_tasklist(api_key, input_text):
     openai.api_key = api_key
-    prompt = f"Turn this text into a task list: {input_text}"
+    prompt = f"""Extract a meaningful task list from the following text and structure it with tasks and subtasks, where applicable. For each task or subtask, provide a description for additional context:
+
+{input_text}
+
+The task list should include:
+- TASKLIST heading
+- TASK
+- Subtasks (if applicable)
+- DESCRIPTION for context"""
+
 
     response = openai.ChatCompletion.create(
         model="gpt-4",
@@ -75,3 +84,4 @@ if st.button("Generate Task List"):
         )
     else:
         st.warning("Please enter text to generate a task list.")
+
