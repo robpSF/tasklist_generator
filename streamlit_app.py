@@ -77,7 +77,23 @@ def generate_tasklist(api_key, input_text):
         model="gpt-4",
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": f"Extract a meaningful task list from the following text:\n\n{input_text}"}
+            {"role": "user", "content": (
+                "Extract a meaningful task list from the following text:\n\n"
+                f"{input_text}\n\n"
+                "The output should be in the following JSON format:\n"
+                "{\n"
+                '  "TASKLIST": ["Heading 1", "Subtask 1", "Subtask 2", "Heading 2", ...],\n'
+                '  "TASK": ["Main Task 1", "- Subtask of Task 1", "Main Task 2", ...],\n'
+                '  "DESCRIPTION": ["Description for Task 1", "", "Description for Task 2", ...],\n'
+                '  "ASSIGN TO": [null, null, null, ...],\n'
+                '  "START DATE": [null, null, null, ...],\n'
+                '  "DUE DATE": [null, null, null, ...],\n'
+                '  "PRIORITY": [null, null, null, ...],\n'
+                '  "ESTIMATED TIME": [null, null, null, ...],\n'
+                '  "TAGS": [null, null, null, ...],\n'
+                '  "STATUS": [null, null, null, ...]\n'
+                "}\n"
+            )}
         ],
         functions=functions,
         function_call={"name": "generate_task_list"}
@@ -87,7 +103,6 @@ def generate_tasklist(api_key, input_text):
     generated_tasks = eval(response['choices'][0]['message']['function_call']['arguments'])
     
     return generated_tasks
-
 # Streamlit UI
 st.title("Task List Generator")
 
