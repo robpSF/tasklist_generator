@@ -8,20 +8,26 @@ from io import BytesIO
 def generate_tasklist(api_key, input_text):
     openai.api_key = api_key
     prompt = f"""
-Extract a meaningful task list from the following text and provide the output in a JSON-like format with the following structure:
+prompt = f"""
+Extract a meaningful task list from the following text and format it in a structured JSON format with the following columns:
 
-{
-  "TASKLIST": ["Heading 1", "Subtask 1", "Subtask 2", "Heading 2", ...],
-  "TASK": ["Main Task 1", "- Subtask of Task 1", "Main Task 2", ...],
-  "DESCRIPTION": ["Description for Task 1", "", "Description for Task 2", ...],
-  "ASSIGN TO": [null, null, null, ...],
-  "START DATE": [null, null, null, ...],
-  "DUE DATE": [null, null, null, ...],
-  "PRIORITY": [null, null, null, ...],
-  "ESTIMATED TIME": [null, null, null, ...],
-  "TAGS": [null, null, null, ...],
-  "STATUS": [null, null, null, ...]
-}
+- TASKLIST: The category of the task (e.g., heading).
+- TASK: Specific task or subtask, including any numbering.
+- DESCRIPTION: A brief context or description of the task.
+- ASSIGN TO: Leave as null.
+- START DATE: Leave as null.
+- DUE DATE: Leave as null.
+- PRIORITY: Leave as null.
+- ESTIMATED TIME: Leave as null.
+- TAGS: Leave as null.
+- STATUS: Leave as null.
+
+Text to extract tasks from:
+
+{input_text}
+
+Provide the output in JSON format, strictly matching the above structure.
+"""
 
 Text to extract tasks from:
 
