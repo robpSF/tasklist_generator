@@ -3,8 +3,8 @@ import pandas as pd
 import streamlit as st
 from datetime import datetime
 from io import BytesIO
+import json
 
-# Function to call OpenAI API and generate tasks from input text using ChatCompletion
 # Function to call OpenAI API and generate tasks from input text using ChatCompletion
 def generate_tasklist(api_key, input_text):
     openai.api_key = api_key
@@ -85,8 +85,9 @@ def generate_tasklist(api_key, input_text):
         function_call={"name": "generate_task_list"}
     )
 
-    # Extract the response from function_call
-    generated_tasks = eval(response['choices'][0]['message']['function_call']['arguments'])
+    # Extract and parse the JSON response
+    arguments_json = response['choices'][0]['message']['function_call']['arguments']
+    generated_tasks = json.loads(arguments_json)
     
     return generated_tasks
 
@@ -94,7 +95,7 @@ def generate_tasklist(api_key, input_text):
 st.title("Task List Generator")
 
 # Input for OpenAI API Key
-api_key = st.secrets["api_key"]
+api_key = st.text_input("Enter your OpenAI API key:", type="password")
 
 # Text area for input text
 input_text = st.text_area("Paste the text here to generate the task list:")
