@@ -6,100 +6,92 @@ from io import BytesIO
 
 # Function to call OpenAI API and generate tasks from input text using ChatCompletion
 def generate_tasklist(api_key, input_text):
-    openai.api_key = api_key
-    prompt = f"""
-prompt = f"""
-Extract a meaningful task list from the following text and format it in a structured JSON format with the following columns:
+    openai_api_key = st.secrets["api_key"]
 
-- TASKLIST: The category of the task (e.g., heading).
-- TASK: Specific task or subtask, including any numbering.
-- DESCRIPTION: A brief context or description of the task.
-- ASSIGN TO: Leave as null.
-- START DATE: Leave as null.
-- DUE DATE: Leave as null.
-- PRIORITY: Leave as null.
-- ESTIMATED TIME: Leave as null.
-- TAGS: Leave as null.
-- STATUS: Leave as null.
+    # Define the expected JSON schema for output
+    functions = [
+        {
+            "name": "generate_task_list",
+            "description": "Generate a structured task list from text",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "TASKLIST": {
+                        "type": "array",
+                        "description": "List of task list categories.",
+                        "items": {"type": "string"}
+                    },
+                    "TASK": {
+                        "type": "array",
+                        "description": "List of tasks and subtasks.",
+                        "items": {"type": "string"}
+                    },
+                    "DESCRIPTION": {
+                        "type": "array",
+                        "description": "List of descriptions for each task or subtask.",
+                        "items": {"type": "string"}
+                    },
+                    "ASSIGN TO": {
+                        "type": "array",
+                        "description": "List of assigned persons (leave null).",
+                        "items": {"type": "null"}
+                    },
+                    "START DATE": {
+                        "type": "array",
+                        "description": "List of start dates (leave null).",
+                        "items": {"type": "null"}
+                    },
+                    "DUE DATE": {
+                        "type": "array",
+                        "description": "List of due dates (leave null).",
+                        "items": {"type": "null"}
+                    },
+                    "PRIORITY": {
+                        "type": "array",
+                        "description": "List of priorities (leave null).",
+                        "items": {"type": "null"}
+                    },
+                    "ESTIMATED TIME": {
+                        "type": "array",
+                        "description": "List of estimated times (leave null).",
+                        "items": {"type": "null"}
+                    },
+                    "TAGS": {
+                        "type": "array",
+                        "description": "List of tags (leave null).",
+                        "items": {"type": "null"}
+                    },
+                    "STATUS": {
+                        "type": "array",
+                        "description": "List of statuses (leave null).",
+                        "items": {"type": "null"}
+                    }
+                },
+                "required": ["TASKLIST", "TASK", "DESCRIPTION"]
+            }
+        }
+    ]
 
-Text to extract tasks from:
-
-{input_text}
-
-Provide the output in JSON format, strictly matching the above structure.
-"""
-
-Text to extract tasks from:
-
-{input_text}
-
-Provide the output in the exact tabular structure."""
-
-
+    # OpenAI API call
     response = openai.ChatCompletion.create(
         model="gpt-4",
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": prompt}
+            {"role": "user", "content": f"Extract a meaningful task list from the following text:\n\n{input_text}"}
         ],
-        max_tokens=200,
-        temperature=0.7
+        functions=functions,
+        function_call={"name": "generate_task_list"}
     )
-    return response.choices[0].message['content'].strip().split("\n")
 
-# Function to create an Excel file with the task list using predefined headers
-def create_excel(task_list):
-    # Define the headers from the provided Excel template
-    headers = ['Tasklist Name', 'Task Name', 'Description', 'Start Date', 'Due Date', 'Assigned To', 'Priority']
+    # Extract the response from function_call
+    generated_tasks = response['choices'][0]['message']['function_call']['arguments']
+    
+    return generated_tasks
 
-    # Add today's date and time as the Tasklist name
-    tasklist_name = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+# Assuming input text and API key are already provided for demonstration purposes
+api_key = "YOUR_OPENAI_API_KEY"
+input_text = "James wishes to create pre-scenario materials, including usernames, passwords, and a video..."
 
-    # Create a DataFrame for the task list
-    task_data = {
-        'Tasklist Name': [tasklist_name] * len(task_list),
-        'Task Name': task_list,
-        'Description': [''] * len(task_list),  # Empty description for now
-        'Start Date': [''] * len(task_list),  # Empty start date for now
-        'Due Date': [''] * len(task_list),  # Empty due date for now
-        'Assigned To': [''] * len(task_list),  # Empty assigned to for now
-        'Priority': [''] * len(task_list)  # Empty priority for now
-    }
-
-    task_df = pd.DataFrame(task_data, columns=headers)
-
-    # Save the dataframe to an Excel file in memory
-    output = BytesIO()
-    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-        task_df.to_excel(writer, index=False)
-    return output.getvalue()
-
-# Streamlit UI
-st.title("Task List Generator")
-
-# Input text for generating tasks
-input_text = st.text_area("Enter text to generate task list")
-
-if st.button("Generate Task List"):
-    if input_text:
-        # Use Streamlit Secrets to get the OpenAI API key
-        api_key = st.secrets["api_key"]
-
-        # Generate task list using the updated function
-        tasks = generate_tasklist(api_key, input_text)
-        st.write("Generated Task List:")
-        st.write(tasks)
-
-        # Create Excel file
-        excel_data = create_excel(tasks)
-
-        # Download button for the Excel file
-        st.download_button(
-            label="Download Task List as Excel",
-            data=excel_data,
-            file_name=f"tasklist_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
-    else:
-        st.warning("Please enter text to generate a task list.")
-
+# Generate the task list
+tasks = generate_tasklist(api_key, input_text)
+print(tasks)
