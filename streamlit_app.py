@@ -6,7 +6,7 @@ from io import BytesIO
 
 # Function to call OpenAI API and generate tasks from input text using ChatCompletion
 def generate_tasklist(api_key, input_text):
-    openai_api_key = api_key
+    openai.api_key = api_key
 
     # Define the expected JSON schema for output
     functions = [
@@ -84,14 +84,42 @@ def generate_tasklist(api_key, input_text):
     )
 
     # Extract the response from function_call
-    generated_tasks = response['choices'][0]['message']['function_call']['arguments']
+    generated_tasks = eval(response['choices'][0]['message']['function_call']['arguments'])
     
     return generated_tasks
 
-# Assuming input text and API key are already provided for demonstration purposes
-api_key = st.secrets["api_key"]
-input_text = "James wishes to create pre-scenario materials, including usernames, passwords, and a video..."
+# Streamlit UI
+st.title("Task List Generator")
 
-# Generate the task list
-tasks = generate_tasklist(api_key, input_text)
-print(tasks)
+# Input for OpenAI API Key
+api_key = st.text_input("Enter your OpenAI API key:", type="password")
+
+# Text area for input text
+input_text = st.text_area("Paste the text here to generate the task list:")
+
+# Button to generate task list
+if st.button("Generate Task List"):
+    if api_key and input_text:
+        try:
+            tasks = generate_tasklist(api_key, input_text)
+            task_list_df = pd.DataFrame(tasks)
+            
+            # Display the generated DataFrame
+            st.write("Generated Task List:")
+            st.dataframe(task_list_df)
+
+            # Option to download the generated task list as an Excel file
+            output = BytesIO()
+            task_list_df.to_excel(output, index=False, engine='openpyxl')
+            output.seek(0)
+
+            st.download_button(
+                label="Download Task List as Excel",
+                data=output,
+                file_name="Generated_Task_List.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
+    else:
+        st.warning("Please provide both an API key and input text.")
